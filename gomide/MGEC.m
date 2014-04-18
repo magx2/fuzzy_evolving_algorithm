@@ -11,7 +11,7 @@ end
 p = zeros(c, 1);
 a = zeros(c, 1);
 for i=1:c,
-    p(i) = gomide_9(x, v_i, SIGMA(i));
+    p(i) = gomide_9(x_k, v_i, SIGMA(i));
     p_i = p(i);
     
     % calculate threshold
