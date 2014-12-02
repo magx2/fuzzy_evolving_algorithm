@@ -1,9 +1,12 @@
 function [ v, SIGMA, cluster_created, cluster_merged, c, idx, o ] = MGEC( k, x_k, v, SIGMA, lambda, omega, SIGMA_init, c, o )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+% setting to false
+cluster_created = 0;
+cluster_merged = 0;
+Ta = 1 - lambda;
+
 if k == 1
     % innitialize first cluster
-    v(1) = x_k;
+    v(:, 1) = x_k;
     SIGMA(1) = SIGMA_init;
     c = 1;
 end
@@ -11,8 +14,10 @@ end
 p = zeros(c, 1);
 a = zeros(c, 1);
 for i=1:c,
-    p(i) = gomide_9(x_k, v_i, SIGMA(i));
-    p_i = p(i);
+    
+    g = gomide_9(x_k, v(:, i), SIGMA(i))
+    p(:, i) = gomide_9(x_k, v(:, i), SIGMA(i));
+    p_i = p(:, i);
     
     % calculate threshold
     Tp = gomide_threshold();
@@ -39,12 +44,12 @@ if p_i < Tp && a(idx) > Ta
     cluster_created = c;
 else
     % update existing cluster
-    v_idx = v(idx);
+    v_idx =  v(:, idx);
     x_v = (x_k - v_idx);
     alpha = 0.1; % alpha = learning rate; alpha = [0, 1]
     G_idx = gomide_G(alpha, p(idx), a(idx));
-    v(idx) = v_idx + G_idx * x_v;
-    SIGMA(idx) = (1 - G_idx) * (SIGMA_idx - G_idx * x_v * x_v');
+    v(:, idx) = v_idx + G_idx * x_v;
+    SIGMA(idx) = (1 - G_idx) * (SIGMA(idx) - G_idx * x_v' * x_v);
 end
 % check for reduntand clusters
 v_idx = v(idx);
@@ -64,7 +69,7 @@ p_i = exp(tmp);
 end
 
 function [ M ] = gomide_7( x, v_i,  SIGMA_i )
-M = (x - v_i) * inv(SIGMA_i) * (x - v_i)';
+M = (x - v_i)' * (1 / SIGMA_i) * (x - v_i);
 end
 
 function [ M ] = gomide_15( v_i, v_j,  SIGMA_i )
@@ -72,7 +77,7 @@ M = gomide_7(v_i, v_j, SIGMA_i);
 end
 
 function [ Tp ] = gomide_threshold()
-Tp = 1;%TODO
+Tp = 0.5;%TODO
 end
 
 function [ G ] = gomide_G( alpha, p_idx, a_idx )
