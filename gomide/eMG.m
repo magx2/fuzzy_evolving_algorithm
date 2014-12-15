@@ -1,5 +1,6 @@
 function [ y_s ] = eMG( x, y_d, lambda, omega, SIGMA_init )
 % 
+% x wektor [k x m]
 % y_d - pierwszy w
 %
 
@@ -18,8 +19,8 @@ gamma(:,1) = y_d;
 % wymiery gamma: [liczba klastrow x liczba kolumn x]
 
 Q_init = omega * eye(liczba_kolumn_x);
-Q = cell(1,1);
-Q{1,1} = Q_init;
+Q = cell(1);
+Q{1} = Q_init;
 
 o = zeros(liczba_kolumn_x, liczba_kolumn_x);
 
@@ -31,57 +32,66 @@ for k=1:liczba_wierszy_x, % lenght(x) - liczba wierszy
     % compute the output
     for i=1:c,
         p(i) = gomide_9(x_k, v(c, :), SIGMA{i});
+       xxx= c
         y(:, i) = x_k * gamma(:, i);
     end
     y_s = weights_multiple_y(p, y, c) / weights(p); % wynik
     
 %     [ v, SIGMA, cluster_created, cluster_merged, c, idx, o ] = MGEC(k, x(:, k), v, SIGMA, lambda, omega, SIGMA_init, c, o);
-cluster_created=1;c=c+1
+
+
+    if mod(k+1, 2) == 1
+        cluster_created=1;c=c+1
+    else
+        cluster_created=0;c
+    end
+
+
+
+
     if (cluster_created) && (c ~= 1) % dla pierwszego klastra mamy juz policzona gamme
        % jezeli zostal stworzony klaster to juz mamy c zwiekszone o 1!
        % create new rule
-       gamma(:, c) = weights_multiple_y(p, gamma, c-1) / weights(p)
+       gamma(:, c) = weights_multiple_y(p, gamma, c-1) / weights(p);
        Q{1, c} = Q_init;
+       
+       
+        % to jest robione w MGEC
+        SIGMA{c} = SIGMA_init; 
+        v(c, :) = x_k;
+    
+    else
+        for i=1:c, 
+           % update consequent parameters     
+           PSI = gomide_21_PSI(x_k, v(:, k), SIGMA, i);
+
+           a = (Q{i} * x_k')'
+           b = y(i, k) - (x_k' * gamma(i))
+
+           gamma(i) = gamma(i) + a * PSI * b;
+           % Q(i) = 
+        end
     end
-    
-    % to jest robione w MGEC
-    SIGMA{c} = SIGMA_init; 
-    v(c, :) = x_k
-    
-    
-    
-%     for i=1:c, 
-%        update consequent parameters
-%        gom =  gomide_21_PSI(x(:, k), v(:, k), SIGMA, i) * ( y(i, k) - (x(:, k)' * gamma(i)) )
-%        q0 = x(:, k)
-%        q1 =  Q{i} * q0
-%        q2 =  q1' * gom'
-%        
-%         gg = gamma(i) + q2
-%         
-%        gamma(i) = gamma(i) + (Q{i} * x(:, k))' * gomide_21_PSI(x(:, k), v(:, k), SIGMA, i) * ( y(i, k) - (x(:, k)' * gamma(i))' );
-%        Q(i) = 
-%     end
 %     if cluster_merged
-%        merge two clusetrs
+%        % merge two clusetrs
 %        
 %     end
 end
 end
 
 function [ PSI ] = gomide_21_PSI(x_k, v_k, SIGMA, i_param)
-PSI = exp( (x_k- v_k(i_param))' * (1 / SIGMA(i_param)) * (x_k- v_k(i_param)) );
+    PSI = exp( (x_k- v_k(i_param)) * inv(SIGMA{i_param}) * (x_k- v_k(i_param))' );
 
-sum = 0;
-for i=1:length(v_k(i_param)),
-    sum = sum + gomide_21_helper(x_k, v_k(i), SIGMA(i));
-end
+    sum = 0;
+    for i=1:length(v_k(i_param)),
+        sum = sum + gomide_21_helper(x_k, v_k(i), SIGMA{i});
+    end
 
-PSI = PSI / sum;
+    PSI = PSI / sum;
 end
 
 function [ out ] = gomide_21_helper(x_k, v_i_k, SIGMA_i_k)
-out = exp( (x_k - v_i_k)' * inv(SIGMA_i_k) * (x_k - v_i_k) );
+    out = exp( (x_k - v_i_k) * inv(SIGMA_i_k) * (x_k - v_i_k)' );
 end
 
 function [ weights_multiple_y ] = weights_multiple_y( p, gamma, num )

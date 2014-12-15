@@ -1,5 +1,5 @@
 function [ out ] = run_eMG() 
-dlugosc_wektora = 5;
+dlugosc_wektora = 2;
 ilosc_danych = 8;
 omega = 50;
 SIGMA_init = eye(dlugosc_wektora)
