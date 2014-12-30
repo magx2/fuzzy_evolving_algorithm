@@ -1,12 +1,45 @@
 function run_simpl_ets
 format long
-    % y = 2x_1 + 3x_2 + 4
-%     x = [
-%         1 2 3 4  5  6  7   8   9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30;
-%         1 2 4 8 16 32 64 128 256 512 15 15 65 44 52 65 26 45 56 7 4 14  48 35 20 20 69 554 24 54
-%     ];
 
-    K=10;
+    [x, y, r, OMEGA, opis] = prosta_funkcja();
+    wykonaj(x, y, r, OMEGA, opis);
+    
+    [x, y, r, OMEGA, opis] = nieruchomosci();
+    wykonaj(x, y, r, OMEGA, opis);
+end
+
+function wykonaj( x, y, r, OMEGA, opis ) 
+    k=1;
+    wiersze = zeros(1, 4);
+    for r_val=r,
+        for OMEGA_val=OMEGA,
+            [ y_przewidywane, R_w_czasie, opis ] = simpl_ets( x, y, r_val, OMEGA_val, opis );
+            RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis);
+        
+            R = opis{3};
+            wiersze(k, :) = [ r_val OMEGA_val RMSE R ];
+            
+            k=k+1;
+        end
+    end
+    
+    dane = opis{1};
+    algorytm = opis{2};
+    
+    csvFileName = ['G:\mgr\csv\' dane '\' dane '-' algorytm '-' TimeStamp '.csv'];
+    
+    fid = fopen(csvFileName, 'w');
+    fprintf(fid, 'r,OMEGA,RMSE,R\n');
+    fclose(fid);
+    
+    %csvwrite(csvFileName,wiersze);
+    dlmwrite(csvFileName, wiersze, '-append', 'precision', '%.6f', 'delimiter', ',');
+end
+
+function [ x, y, r, OMEGA, opis ] = prosta_funkcja() 
+    % y = 2x_1 + 3x_2 + 4
+    
+    K=50;
     for k=1:K,
         x(:, k) = [ k k*2 ]';
     end
@@ -14,14 +47,29 @@ format long
     y = zeros(1, length(x));
     for k=1:length(x),
         x_k = x(:, k);
-      % y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
-      y(k) = sin(x_k(1) +x_k(2));
+        y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
     end
-    %plot3(x(1,:)', x(2,:)', y')
+    
+    r = [ 1 20 ];
+    
+    OMEGA = [ 1 2 5 7 11 13 ];
+    
+    opis = cell(1,1);
+    opis{1} = 'y=2x+3x+4';
+end
 
-    r = 11;
+function [ x, y, r, OMEGA, opis ] = nieruchomosci() 
+    filename = 'G:\mgr\dane\wart_nier_niezab_wg_czasu_07.csv';
+ 
+     csv = csvread(filename,1,0);
+     
+     x = csv(:, 1:13)';
+     y = csv(:, 14)';
     
-    OMEGA = 1;
+    r = [ 0.1 0.5 1 20 ];
     
-    simpl_ets( x, y, r, OMEGA )
+    OMEGA = [ 1 2 5 7 11 13 ];
+    
+    opis = cell(1,1);
+    opis{1} = 'Nieruchomosci';
 end

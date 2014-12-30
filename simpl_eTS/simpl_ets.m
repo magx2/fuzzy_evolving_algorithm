@@ -1,8 +1,9 @@
-function [ y_s ] = simpl_ets( x, y, r, OMEGA )
+function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
     % x macierz [n x k] gdzie k liczba danych
     % y prawdziwe wyjscie jakie zaobserwowano [1 x k]
     % r is a positive constant, which defines the zone of influence of the i-th fuzzy rule antecedent
-
+    opis{2} = 'simpl eTS';
+    
     % psi(k) - [(n+1), R]
     % THETA(k) - [(n+1), mR]
     % y_daszek(k) - [m, 1]
@@ -40,8 +41,13 @@ function [ y_s ] = simpl_ets( x, y, r, OMEGA )
     C = cell(K, R);
     C{1, R} = OMEGA * eye(n+1);
     
+    % w celach statystycznuch ilosc klastrow w czasie k
+    R_w_czasie = zeros(1,K);
+    
     k = 1;
     while k <= K - 1
+        
+        R_w_czasie(k) = R;
         
         % stage 2
         x_k = x(:, k + 1); % k-ta kolumna; k-ta dana
@@ -86,12 +92,12 @@ function [ y_s ] = simpl_ets( x, y, r, OMEGA )
         [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r);
         
         if retu_24 && retu_25
-           disp(['podmien klaster l=', num2str(l), '   k=', num2str(k)]);
+%            disp(['podmien klaster l=', num2str(l), '   k=', num2str(k)]);
            
            x_gwiazdka{l} = x_k;
            S_gwiazdka{k, l} = S_k;
         elseif retu_24
-            disp(['nowy    klaster R=', num2str(R+1), '   k=', num2str(k)]);
+%             disp(['nowy    klaster R=', num2str(R+1), '   k=', num2str(k)]);
             % (23)
             
             R = R + 1;
@@ -107,7 +113,7 @@ function [ y_s ] = simpl_ets( x, y, r, OMEGA )
             end
             psi{k, R} = zeros((n+1), 1);
         else
-            disp(['nie rob nic 24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k)]);
+%             disp(['nie rob nic 24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k)]);
         end
         
         % Estimate the parameters of local sub-models by RLS (31)-(32)        
@@ -118,15 +124,11 @@ function [ y_s ] = simpl_ets( x, y, r, OMEGA )
         end
         
        % k = K+1;
-    end 
-    wynik = [y_daszek{k}]'
-  %  wynik_z = cell2mat(z_gwiazdka)'
-   % theta_k = [THETA{K, :}]'
-   for k=1:K,
-    out(k, :) =[ y_daszek{k} , y(k) (y_daszek{k} - y(k))];
-   end
-   out
-   y'
+    end
+    opis{3} = R;
+    opis{4} = r;
+    opis{5} = OMEGA;
+    disp(['Koniec R=' num2str(R) ]);
 end
 
 function [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r)
@@ -139,8 +141,6 @@ function [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r)
             l = i;
         end
     end 
-    
-    minnnn = min;
     
     retu_25 = min < ( r / 2 );
 end
