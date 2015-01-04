@@ -43,12 +43,11 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
     
     % w celach statystycznuch ilosc klastrow w czasie k
     R_w_czasie = zeros(1,K);
+    R_w_czasie(1) = R;
     
     k = 1;
     while k <= K - 1
-        
-        R_w_czasie(k) = R;
-        
+                
         % stage 2
         x_k = x(:, k + 1); % k-ta kolumna; k-ta dana
         
@@ -124,11 +123,13 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
         end
         
        % k = K+1;
+        R_w_czasie(k) = R;
     end
     opis{3} = R;
     opis{4} = r;
     opis{5} = OMEGA;
-    disp(['Koniec R=' num2str(R) ]);
+    opis{6} = z_gwiazdka;
+    opis{7} = x;
 end
 
 function [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r)
