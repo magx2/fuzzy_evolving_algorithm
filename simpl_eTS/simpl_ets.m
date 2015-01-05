@@ -16,9 +16,17 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
     x_gwiazdka = cell(R, 1);
     x_gwiazdka{R} =  x(:, 1);
     
+    ilosc_w_klastrze = cell(R,1);
+    ilosc_w_klastrze{R} = 1;
+    
     % stage one - inicjalizacja parametrów
     z = cell(K, 1); % read z(1) 
     z{1} = [x(:,1)', y(:,1)']';
+    
+    z_sr = cell(K,1);
+    z_sr{1} = zeros((m+n),1);
+    sigma = cell(K,1);
+    sigma{1} = zeros((m+n),1);
     
     S_gwiazdka = cell(K, R);
     S_gwiazdka{1, R} = 0;
@@ -56,11 +64,16 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
         % stage 3
         % Estimate the output: y_daszek(k + 1) by (16)
         % (16) y_daszek(k + 1) = psi^T(k + 1)THETA(k)
+        mi1 = mi(x_k, x_gwiazdka, r, R);
         for i=1:R,
-            mi1 = mi(x_k, x_gwiazdka, r, R);
             lambda1 = lambda( mi1, i );
+           
+            if ilosc_w_klastrze{i} / k < 0.01
+                lambda1=0;
+            end
             
-           psi{k + 1, i} = lambda1 * x_k_e;
+%             disp([ 'mi ' mat2str(mi1{i}) ' lambda ' num2str(lambda1) ' i ' num2str(i) ' k ' num2str(k) ]);
+            psi{k + 1, i} = lambda1 * x_k_e;
         end
         y_daszek{k + 1} = zeros(1, m);
         for i=1:R,
@@ -76,13 +89,22 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
         % Calculate S_k recursively by (19) - (20)
         % z(k) = [ x(k), y(k) ]'
         z{k} = [x_k', y_k']';
+        
+        z_sr{k} = z_sr{k-1} + z{k}/k; % (11)
+        sigma{k} = (k-1)/k * sigma{k-1} + 1/(k-1) * (z{k}-z_sr{k}).^2; %( 12)
+        
+        for j=1:(m+n),
+            z{k}(j) = ( z{k}(j)-z_sr{k}(j) ) / sigma{k}(j); % (13)
+        end
+        
 
         S_k = fS_k(k, n, m, z);
      
         % stage 6
         % update S(z_i_gwiazdka) each centre by 23a
+        z_tmp = sumsqr(z{k}-z{k-1});
         for i=1:R,
-            S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z{k-1});
+            S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + z_tmp;
         end;
         
         % Compare S(k) with S_k(z_i_gw)
@@ -91,12 +113,21 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
         [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r);
         
         if retu_24 && retu_25
-%            disp(['podmien klaster l=', num2str(l), '   k=', num2str(k)]);
+%             disp(['podmien klaster l=', num2str(l), '   k=', num2str(k)]);
            
            x_gwiazdka{l} = x_k;
            S_gwiazdka{k, l} = S_k;
+           z_gwiazdka{R} = z{k};
+           
+           ilosc_w_klastrze{l} = ilosc_w_klastrze{l} +1;
+           
+           
+             for i=1:R,
+                C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k,i} * psi{k,i}' * C{k - 1, i} ) / ( 1 + psi{k,i}' * C{k - 1, i} * psi{k,i});
+                THETA{k, i} = THETA{k - 1, i} + C{k, i} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
+            end
         elseif retu_24
-%             disp(['nowy    klaster R=', num2str(R+1), '   k=', num2str(k)]);
+%              disp(['nowy    klaster R=', num2str(R+1), '   k=', num2str(k)]);
             % (23)
             
             R = R + 1;
@@ -110,17 +141,62 @@ function [ y_daszek, R_w_czasie, opis ] = simpl_ets( x, y, r, OMEGA, opis )
                 C{i, R} = OMEGA * eye(n+1);
                 THETA{i, R} = PI{1}';
             end
-            psi{k, R} = zeros((n+1), 1);
+            psi{k, R} = psi{k, R-1};
+            
+            ilosc_w_klastrze{R} = 1;
+            
+            
+            % reset jak w (5)
+            for i=1:(R),
+                tmp =0;
+                for l=1:k,
+                   tmp=tmp+sumsqr(z{l}-z{k}); 
+                end
+                
+                S_gwiazdka{k,i} = tmp / (k * (n+m));
+            end
+            
+            
+            
+            
+            for i=1:(R),
+                C{k, i} = C{k - 1, i};
+                THETA{k, i} = THETA{k - 1, i} + C{k,i} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
+            end
+            
+            
+            
         else
-%             disp(['nie rob nic 24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k)]);
+%              disp(['nie rob nic 24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k)]);
+             
+            % dodaje ilosc do klastra
+            min_idx = 1;
+            min_val = sumsqr((x_k - x_gwiazdka{min_idx}));
+            for i=1:R,
+                val = sumsqr((x_k - x_gwiazdka{i}));
+                if val < min_val
+                    min_val=val;
+                    min_idx = i;
+                end
+            end
+            ilosc_w_klastrze{min_idx} = ilosc_w_klastrze{min_idx} + 1;
+            
+            
+            for i=1:R,
+                C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k,i} * psi{k,i}' * C{k - 1, i} ) / ( 1 + psi{k,i}' * C{k - 1, i} * psi{k,i});
+                THETA{k, i} = THETA{k - 1, i} + C{k,i} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
+            end
         end
+        
+        
+
         
         % Estimate the parameters of local sub-models by RLS (31)-(32)        
         
-        for i=1:R,
-            C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k} * psi{k}' * C{k - 1, i} ) / ( 1 + psi{k}' * C{k - 1, i} * psi{k});
-            THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
-        end
+%         for i=1:R,
+%             C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k,i} * psi{k,i}' * C{k - 1, i} ) / ( 1 + psi{k,i}' * C{k - 1, i} * psi{k,i});
+%             THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
+%         end
         
        % k = K+1;
         R_w_czasie(k) = R;
@@ -191,14 +267,14 @@ function [ lambda ] = lambda( mi, i )
     lambda = mi{i} / sum([mi{:}]);
 end
 
-function [ mi ] = mi(x, x_gwiazdka, r, R)
+function [ mi1 ] = mi(x, x_gwiazdka, r, R)
     % mi - skalar
-    mi = cell(R, 1);
+    mi1 = cell(R, 1);
     for i=1:R,
         out = 1;
         for j=1:length(x),
-            out = out * ( 1 + ( (2/r) * (x(j) - x_gwiazdka{i}(j)) )^2 );
+            out = out * ( 1 + ( 2 * (x(j) - x_gwiazdka{i}(j))  / r )^2);
         end
-        mi{i} = 1 / out;
+        mi1{i} = 1 / out;
     end
 end

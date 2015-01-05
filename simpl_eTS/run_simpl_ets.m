@@ -2,19 +2,32 @@ function run_simpl_ets
 format long
 
     [x, y, r, OMEGA, opis] = prosta_funkcja();
-    %wykonaj(x, y, r, OMEGA, opis);
+%     wykonaj(x, y, r, OMEGA, opis);
     
-    [x, y, r, OMEGA, opis] = nieruchomosci();
+    [x, y, r, OMEGA, opis] = gas();
     wykonaj(x, y, r, OMEGA, opis);
     
-    [x, y, r, OMEGA, opis] = sml();
-    wykonaj(x, y, r, OMEGA, opis);
+%     [x, y, r, OMEGA, opis] = nieruchomosci2();
+%     wykonaj(x, y, r, OMEGA, opis);
     
-    [x, y, r, OMEGA, opis] = bike_data_day();
-    wykonaj(x, y, r, OMEGA, opis);
-    
-    [x, y, r, OMEGA, opis] = bike_data_hour();
-    wykonaj(x, y, r, OMEGA, opis);
+%     [x, y, r, OMEGA, opis] = nieruchomosci();
+%     wykonaj(x, y, r, OMEGA, opis);
+%     
+%     [x, y, r, OMEGA, opis] = sml();
+%     wykonaj(x, y, r, OMEGA, opis);
+%     
+%     [x, y, r, OMEGA, opis] = bike_data_day();
+%     wykonaj(x, y, r, OMEGA, opis);
+%     
+%     [x, y, r, OMEGA, opis] = bike_data_hour();
+%     wykonaj(x, y, r, OMEGA, opis);
+end
+
+function [ r, OMEGA ] = wejscie()
+    r = [ 0.4 100 0.01 1 ];
+    OMEGA = [ 1 10 100 750 ];
+%     r = [0.59];
+%     OMEGA = 750;
 end
 
 function wykonaj( x, y, r, OMEGA, opis ) 
@@ -34,18 +47,13 @@ function wykonaj( x, y, r, OMEGA, opis )
     wynikiFolder = [ tismp  '\'];
     mkdir(['G:\mgr\wyniki\' dane '\' wynikiFolder]);
     
-    wynikiFileName = ['G:\mgr\wyniki\' dane '\' dane '-' algorytm '-' tismp '.csv'];
-    fid = fopen(wynikiFileName, 'w');
-    fprintf(fid, 'nr,y,y^,R\n');
-    fclose(fid);
-    
     k=1;
     for r_val=r,
         for OMEGA_val=OMEGA,
             
             wynikiFileName = ['G:\mgr\wyniki\' dane '\' wynikiFolder dane '-' algorytm '-' tismp '-' num2str(k) '.csv'];
             fid = fopen(wynikiFileName, 'w');
-            fprintf(fid, 'y,y^,R\n');
+            fprintf(fid, 'y,y^,y-y^,R\n');
             fclose(fid);
             
             tic;
@@ -56,7 +64,7 @@ function wykonaj( x, y, r, OMEGA, opis )
             R = opis{3};
             wiersz = [ k r_val OMEGA_val RMSE R czas ];
             
-            disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' OMEGA=' num2str(OMEGA_val) ' r=' num2str(r_val)  ' RMSE='  num2str(RMSE) ]);
+            disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' OMEGA=' num2str(OMEGA_val) ' r=' num2str(r_val)  ' RMSE='  num2str(RMSE) ' czas=' num2str(czas/60) ]);
             
             k=k+1;
             
@@ -65,7 +73,7 @@ function wykonaj( x, y, r, OMEGA, opis )
             %fclose(fid);
             
             %fid = fopen(wynikiFileName, 'a');
-            dlmwrite(wynikiFileName, [ y', cell2mat(y_przewidywane), R_w_czasie' ], '-append', 'precision', '%.6f', 'delimiter', ',');
+            dlmwrite(wynikiFileName, [ y', cell2mat(y_przewidywane),y'-cell2mat(y_przewidywane), R_w_czasie' ], '-append', 'precision', '%.6f', 'delimiter', ',');
             %fclose(fid);
         end
     end    
@@ -86,9 +94,7 @@ function [ x, y, r, OMEGA, opis ] = prosta_funkcja()
         y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
     end
     
-    r = [ 0.001 0.01 0.1 1 10 100 ];
-    
-    OMEGA = [ 0.001 0.01 0.1 1 10 100 ];
+    [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
     opis{1} = 'y=2x+3x+4';
@@ -102,12 +108,24 @@ function [ x, y, r, OMEGA, opis ] = nieruchomosci()
      x = csv(:, 1:13)';
      y = csv(:, 14)';
     
-    r = [ 0.001 0.01 0.1 1 10 100 ];
-    
-    OMEGA = [ 0.001 0.01 0.1 1 10 100 ];
+    [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
     opis{1} = 'Nieruchomosci';
+end
+
+function [ x, y, r, OMEGA, opis ] = nieruchomosci2() 
+    filename = 'G:\mgr\dane\wart_nier_niezab_wg_czasu_07-2.csv';
+ 
+     csv = csvread(filename,1,0);
+     
+     x = csv(:, 1:13)'*1000;
+     y = csv(:, 14)'*1000;
+    
+    [r, OMEGA] = wejscie();
+    
+    opis = cell(1,1);
+    opis{1} = 'Nieruchomosci2';
 end
 
 function [ x, y, r, OMEGA, opis ] = bike_data_day() 
@@ -118,9 +136,7 @@ function [ x, y, r, OMEGA, opis ] = bike_data_day()
     x = csv(:, 3:13)';
     y = csv(:, 16)';
     
-    r = [ 0.001 0.01 0.1 1 10 100 ];
-    
-    OMEGA = [ 0.001 0.01 0.1 1 10 100 ];
+    [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
     opis{1} = 'Bike Sharing Data - day';
@@ -134,9 +150,7 @@ function [ x, y, r, OMEGA, opis ] = bike_data_hour()
     x = csv(:, 3:13)';
     y = csv(:, 16)';
     
-    r = [ 0.001 0.01 0.1 1 10 100 ];
-    
-    OMEGA = [ 0.001 0.01 0.1 1 10 100 ];
+    [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
     opis{1} = 'Bike Sharing Data - hour';
@@ -162,10 +176,22 @@ function [ x, y, r, OMEGA, opis ] = sml()
     %x = [x1; x2]';
     %y = [y1;y2]';
     
-    r =  fliplr([ 0.001 0.01 0.1 1 10 100 ]);
-    
-    OMEGA =  fliplr([ 0.001 0.01 0.1 1 10 100 ]);
+    [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
     opis{1} = 'sml';
+end
+
+function [ x, y, r, OMEGA, opis ] = gas()     
+    filename = 'G:\mgr\dane\gas-furnace.csv';
+ 
+    csv = csvread(filename,0,0);
+
+    x = csv(:, 1)';
+    y = csv(:, 2)';
+    
+    [r, OMEGA] = wejscie();
+    
+    opis = cell(1,1);
+    opis{1} = 'gas';
 end
