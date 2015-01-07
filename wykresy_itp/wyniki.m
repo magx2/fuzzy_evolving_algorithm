@@ -1,4 +1,4 @@
-function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr )
+function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S, S_min, S_max, S_podmiana, S_nowy )
 % opis = [ nazwa_danych algorytm R r OMEGA z_gwiazdka x ]
     dane = opis{1};
     algorytm = opis{2};
@@ -72,5 +72,29 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr )
     set(gcf, 'PaperSize', [5,5]); %Set the paper to have width 5 and height 5.
     saveas(gcf, filename, 'png') %Save figure
   
+    % S min max
+    filename = ['G:\mgr\s-min-max\' dane '\' dane '-' algorytm '-' TimeStamp '-s-min-max'  '-' num2str(nr)];
+    
+    %plot1 = figure;
+    smi=cell2mat(S_min);
+    sma= cell2mat(S_max);
+    s=cell2mat(S);
+    p=cell2mat(S_podmiana);
+    n=cell2mat(S_nowy);
+    plot([0:K-1], smi, '-*r',[0:K-1], sma, ':.g',[0:K-1], s, '--ob',[0:K-1], p,'+c',[0:K-1], n,'xm');
+    set(gcf, 'visible','off');
+    title([' (' dane ' - ' algorytm ')']);
+    xlabel('nr danej przychodzacej');
+    ylabel('S');
+    %legend('y przewidywane','y', 'RMSE');
+    legend('S min','S max','S');
+    
+    MyBox = text(0.5,0.5,['algorytm=', algorytm]);
+    set(MyBox,'Units','Normalized');
+    set(MyBox,'Position',[0.02,0.9]);
+    
+    set(gcf, 'PaperSize', [5,5]); %Set the paper to have width 5 and height 5.
+    saveas(gcf, filename, 'png') %Save figure
+    
     
 end

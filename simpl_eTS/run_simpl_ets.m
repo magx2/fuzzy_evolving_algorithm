@@ -1,7 +1,8 @@
 function run_simpl_ets
 format long
-
-    [x, y, r, OMEGA, opis] = prosta_funkcja();
+% 
+%     [x, y, r, OMEGA, opis] = prosta_funkcja();
+%     r=1000;
 %     wykonaj(x, y, r, OMEGA, opis);
     
     [x, y, r, OMEGA, opis] = gas();
@@ -12,22 +13,22 @@ format long
     
 %     [x, y, r, OMEGA, opis] = nieruchomosci();
 %     wykonaj(x, y, r, OMEGA, opis);
-%     
+% %     
 %     [x, y, r, OMEGA, opis] = sml();
 %     wykonaj(x, y, r, OMEGA, opis);
 %     
 %     [x, y, r, OMEGA, opis] = bike_data_day();
 %     wykonaj(x, y, r, OMEGA, opis);
-%     
+     
 %     [x, y, r, OMEGA, opis] = bike_data_hour();
 %     wykonaj(x, y, r, OMEGA, opis);
 end
 
 function [ r, OMEGA ] = wejscie()
-    r = [ 0.4 100 0.01 1 ];
-    OMEGA = [ 1 10 100 750 ];
-%     r = [0.59];
-%     OMEGA = 750;
+%     r = [ 100 0.4 1   ];
+%     OMEGA = [ 100 750 1  ];
+    r = [0.4];
+    OMEGA = 750;
 end
 
 function wykonaj( x, y, r, OMEGA, opis ) 
@@ -57,14 +58,15 @@ function wykonaj( x, y, r, OMEGA, opis )
             fclose(fid);
             
             tic;
-            [ y_przewidywane, R_w_czasie, opis ] = simpl_ets( x, y, r_val, OMEGA_val, opis );
+            [ y_przewidywane, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = simpl_ets( x, y, r_val, OMEGA_val, opis );
             czas = toc;
-            RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k);
+             
+            RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k , S, S_min, S_max, S_podmiana, S_nowy);
             
             R = opis{3};
             wiersz = [ k r_val OMEGA_val RMSE R czas ];
             
-            disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' OMEGA=' num2str(OMEGA_val) ' r=' num2str(r_val)  ' RMSE='  num2str(RMSE) ' czas=' num2str(czas/60) ]);
+            disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' czas=' num2str(czas/60) ' (OMEGA|r)=(' num2str(OMEGA_val) '|' num2str(r_val)  ') RMSE='  num2str(RMSE) ]);
             
             k=k+1;
             
@@ -92,6 +94,29 @@ function [ x, y, r, OMEGA, opis ] = prosta_funkcja()
     for k=1:length(x),
         x_k = x(:, k);
         y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
+    end
+    
+    x=mat2gray(x);
+    y=mat2gray(y);
+    
+    [r, OMEGA] = wejscie();
+    
+    opis = cell(1,1);
+    opis{1} = 'y=2x+3x+4';
+end
+
+function [ x, y, r, OMEGA, opis ] = sinus() 
+    % y = 2x_1 + 3x_2 + 4
+    
+    K=50;
+    for k=1:K,
+        x(:, k) = [ k ]';
+    end
+    
+    y = zeros(1, length(x));
+    for k=1:length(x),
+        x_k = x(:, k);
+        y(k) =  sin(x_k(1));
     end
     
     [r, OMEGA] = wejscie();
@@ -133,8 +158,8 @@ function [ x, y, r, OMEGA, opis ] = bike_data_day()
  
     csv = csvread(filename,1,0);
     
-    x = csv(:, 3:13)';
-    y = csv(:, 16)';
+    x = mat2gray(csv(:, 3:13)');
+    y = mat2gray(csv(:, 16)');
     
     [r, OMEGA] = wejscie();
     
@@ -147,8 +172,8 @@ function [ x, y, r, OMEGA, opis ] = bike_data_hour()
  
     csv = csvread(filename,1,0);
      
-    x = csv(:, 3:13)';
-    y = csv(:, 16)';
+    x =  mat2gray(csv(:, 3:13)');
+    y =  mat2gray(csv(:, 16)');
     
     [r, OMEGA] = wejscie();
     
@@ -185,10 +210,13 @@ end
 function [ x, y, r, OMEGA, opis ] = gas()     
     filename = 'G:\mgr\dane\gas-furnace.csv';
  
-    csv = csvread(filename,0,0);
+    csv = csvread(filename,2,0);
 
-    x = csv(:, 1)';
-    y = csv(:, 2)';
+    x = (csv(:, 1)');
+    y = mat2gray(csv(:, 2)');
+    
+%     x=x(1,1:50);
+%     y=y(1,1:50);
     
     [r, OMEGA] = wejscie();
     
