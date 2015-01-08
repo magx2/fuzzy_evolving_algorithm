@@ -2,7 +2,7 @@ function run_simpl_ets
 format long
 % 
 %     [x, y, r, OMEGA, opis] = prosta_funkcja();
-%     r=1000;
+%      %r=1000;
 %     wykonaj(x, y, r, OMEGA, opis);
     
     [x, y, r, OMEGA, opis] = gas();
@@ -33,6 +33,8 @@ end
 
 function wykonaj( x, y, r, OMEGA, opis ) 
     disp([ 'Zaczynam [' opis{1} '] x '  num2str(length(r) * length(OMEGA)) ]);
+   
+%     x=[x,x];y=[y,y];
     
     dane = opis{1};
     algorytm = 'simpl eTS';
@@ -85,7 +87,7 @@ end
 function [ x, y, r, OMEGA, opis ] = prosta_funkcja() 
     % y = 2x_1 + 3x_2 + 4
     
-    K=50;
+    K=250;
     for k=1:K,
         x(:, k) = [ k k*2 ]';
     end

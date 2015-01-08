@@ -73,7 +73,7 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     saveas(gcf, filename, 'png') %Save figure
   
     % S min max
-    filename = ['G:\mgr\s-min-max\' dane '\' dane '-' algorytm '-' TimeStamp '-s-min-max'  '-' num2str(nr)];
+    filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp '-s-min-max'  '-' num2str(nr)];
     
     %plot1 = figure;
     smi=cell2mat(S_min);

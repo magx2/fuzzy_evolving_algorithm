@@ -82,14 +82,27 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         % (16) y_daszek(k + 1) = psi^T(k + 1)THETA(k)
         mi1 = mi(x_k, x_gwiazdka, r, R);
         lambda1=cell(R,1);
+        lam_0=0;
+        lam_z_0=zeros(1,R);
         for i=1:R,
             lambda1{i} = lambda( mi1, i );
            
             if ilosc_w_klastrze{i} / k < 0.01
+                lam_0=lam_0+lambda1{i};
                 lambda1{i}=0;
+                lam_z_0(i)=i;
             end
             
             psi{k + 1, i} = lambda1{i} * x_k_e;
+        end
+        lam_0=lam_0/(R-nnz(lam_z_0));
+        if lam_0 > 0
+            % dodawanie z zer
+            for i=1:R,
+                if ~ismember([i],lam_z_0)
+                    lambda1{i}=+lambda1{i}+1;
+                end
+            end
         end
         y_daszek{k + 1} = zeros(1, m);
         for i=1:R,
@@ -124,14 +137,21 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 %             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + z_tmp;
 %         end;
         z_tmp=sumsqr(z{k}-z{k-1});
+%         for i=1:R,
+%%             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z_gwiazdka{i});
+% %             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z{k-1});
+%             a = (k-1)*S_gwiazdka{k-1, i};
+%             b = k-2+S_gwiazdka{k-1, i}+ ( S_gwiazdka{k-1, i} * z_tmp );
+%             S_gwiazdka{k,i} = a/b;
+%         end;
+    
+        % ang(21)
         for i=1:R,
-            %S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z_gwiazdka{i});
-%             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z{k-1});
             a = (k-1)*S_gwiazdka{k-1, i};
-            b = k-2+S_gwiazdka{k-1, i}+ ( S_gwiazdka{k-1, i} * z_tmp );
-            S_gwiazdka{k,i} = a/b;
-        end;
-                
+            b = k - 2 + S_gwiazdka{k-1, i} + (S_gwiazdka{k-1, i} * z_tmp);
+            S_gwiazdka{k,i}=a/b;
+        end
+
         s= [S_gwiazdka{k, :}];
         S_min{k} = min(s);
         S_max{k} = max(s);
@@ -142,10 +162,6 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         retu_24 = s_ets_24( S_k, [S_gwiazdka{k, :}]);
         [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r);
         byl_dodany_klaster=0;
-        
-        if k<2
-            retu_24=0
-        end
         
         if retu_24 && retu_25
 % podmien klaster
@@ -236,9 +252,9 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 % END nic nie robienie z klastrem
         end
 %        
-        a=abs(y_k-y_daszek{k});
-        s=sign(y_k-y_daszek{k});
-        y_daszek{k}= y_daszek{k} + (1-2^(-a*s));
+%         a=abs(y_k-y_daszek{k});
+%         s=sign(y_k-y_daszek{k});
+%         y_daszek{k}= y_daszek{k} + (1-2^(-a*s));
         % Estimate the parameters of local sub-models by RLS (31)-(32)
 %         if ~byl_dodany_klaster
 %             for i=1:(R),
@@ -248,7 +264,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 %         end
        for i=1:(R),
             C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k,i} * psi{k,i}' * C{k - 1, i} ) / ( 1 + psi{k,i}' * C{k - 1, i} * psi{k,i});
-            THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k - psi{k, i}' * THETA{k - 1, i} );
+            THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k - y_daszek{k} );
        end
         
        % k = K+1;
@@ -342,7 +358,7 @@ function [ S_k ] = globalS(k, n, m, z )
 end
 
 function [ S_k ] = S_ang(k, n, m, z )
-    % (17)
+    % (19)
     suma=0;
     for l=1:k-1,
         suma=suma+sumsqr(z{l} - z{k});
