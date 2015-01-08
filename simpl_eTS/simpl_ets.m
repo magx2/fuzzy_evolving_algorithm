@@ -116,7 +116,6 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         
         % stage 5
         % Calculate S_k recursively by (19) - (20)
-        % z(k) = [ x(k), y(k) ]'
         z{k} = [x_k', y_k']';
         
         z_sr{k} =  ( (k-1)/k ) * z_sr{k-1} + z{k}/k; % (11)
@@ -137,13 +136,13 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 %             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + z_tmp;
 %         end;
         z_tmp=sumsqr(z{k}-z{k-1});
-%         for i=1:R,
-%%             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z_gwiazdka{i});
-% %             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z{k-1});
-%             a = (k-1)*S_gwiazdka{k-1, i};
-%             b = k-2+S_gwiazdka{k-1, i}+ ( S_gwiazdka{k-1, i} * z_tmp );
-%             S_gwiazdka{k,i} = a/b;
-%         end;
+        for i=1:R,
+%             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z_gwiazdka{i});
+%             S_gwiazdka{k, i} = (k-2)/(k-1) * S_gwiazdka{k-1, i} + sumsqr(z{k}-z{k-1});
+            a = (k-1)*S_gwiazdka{k-1, i};
+            b = k-2+S_gwiazdka{k-1, i}+ ( S_gwiazdka{k-1, i} * z_tmp );
+            S_gwiazdka{k,i} = a/b;
+        end;
     
         % ang(21)
         for i=1:R,
@@ -163,7 +162,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         [ retu_25, l ] = s_ets_25( x_k, x_gwiazdka, R, r);
         byl_dodany_klaster=0;
         
-        if retu_24 && retu_25
+        if retu_24 && retu_25 
 % podmien klaster
             if debug
                 disp([ 'podmien klaster l=', num2str(l), '   k=', num2str(k) ' y-y^=' num2str(y_k-y_daszek{k}) ]);
@@ -183,7 +182,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
             S_podmiana{k} = S_k;
             S_nowy{k} = -created;
 % END podmien klaster
-        elseif retu_24
+        elseif retu_24 
 % nowy klaster
             if debug
               disp(['nowy    klaster R=', num2str(R+1), '   k=', num2str(k) ' y-y^=' num2str(y_k-y_daszek{k}) ]);
@@ -193,8 +192,8 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
             R = R + 1;
             x_gwiazdka{R} =  x_k;
             S_gwiazdka{k, R} = S_k;
-            S_podmiana{k} = -created;
-            S_nowy{k} = S_k;
+                                                                            S_podmiana{k} = -created;
+                                                                            S_nowy{k} = S_k;
             
             z_gwiazdka{R} = z{k};
             
@@ -268,13 +267,13 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
        end
         
        % k = K+1;
-        R_w_czasie(k) = R;
-        
-        
-        s= [S_gwiazdka{k, :}];
-        S_min{k} = min(s);
-        S_max{k} = max(s);
-        S{k} = S_k;
+                                                                            R_w_czasie(k) = R;
+
+
+                                                                            s= [S_gwiazdka{k, :}];
+                                                                            S_min{k} = min(s);
+                                                                            S_max{k} = max(s);
+                                                                            S{k} = S_k;
     end
     
 %     for k=1:K

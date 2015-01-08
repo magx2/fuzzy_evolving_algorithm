@@ -1,6 +1,6 @@
 function run_simpl_ets
 format long
-% 
+
 %     [x, y, r, OMEGA, opis] = prosta_funkcja();
 %      %r=1000;
 %     wykonaj(x, y, r, OMEGA, opis);
@@ -63,6 +63,10 @@ function wykonaj( x, y, r, OMEGA, opis )
             [ y_przewidywane, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = simpl_ets( x, y, r_val, OMEGA_val, opis );
             czas = toc;
              
+            y = y(2:end);
+            y_przewidywane = y_przewidywane(2:end);
+            R_w_czasie = R_w_czasie(2:end);
+            
             RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k , S, S_min, S_max, S_podmiana, S_nowy);
             
             R = opis{3};
@@ -97,9 +101,6 @@ function [ x, y, r, OMEGA, opis ] = prosta_funkcja()
         x_k = x(:, k);
         y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
     end
-    
-    x=mat2gray(x);
-    y=mat2gray(y);
     
     [r, OMEGA] = wejscie();
     
@@ -212,10 +213,12 @@ end
 function [ x, y, r, OMEGA, opis ] = gas()     
     filename = 'G:\mgr\dane\gas-furnace.csv';
  
-    csv = csvread(filename,2,0);
+    csv = csvread(filename,0,0);
 
+%     x = mat2gray(csv(:, 1)');
+%     y = mat2gray(csv(:, 2)');
     x = (csv(:, 1)');
-    y = mat2gray(csv(:, 2)');
+    y = (csv(:, 2)');
     
 %     x=x(1,1:50);
 %     y=y(1,1:50);

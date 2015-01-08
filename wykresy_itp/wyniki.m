@@ -37,7 +37,7 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     
     %plot1 = figure;
     %plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b',[0:K-1], out(:,3), 'r');
-    plot([0:K-1], R_w_czasie, 'g');
+    plot([1:K], R_w_czasie, 'g');
     set(gcf, 'visible','off');
     title(['Liczba klastórw w czasie (' dane ' - ' algorytm ')']);
     xlabel('nr danej przychodzacej');
@@ -81,7 +81,7 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     s=cell2mat(S);
     p=cell2mat(S_podmiana);
     n=cell2mat(S_nowy);
-    plot([0:K-1], smi, '-*r',[0:K-1], sma, ':.g',[0:K-1], s, '--ob',[0:K-1], p,'+c',[0:K-1], n,'xm');
+    plot([0:K], smi, '-*r',[0:K], sma, ':.g',[0:K], s, '--ob',[0:K], p,'+c',[0:K], n,'xm');
     set(gcf, 'visible','off');
     title([' (' dane ' - ' algorytm ')']);
     xlabel('nr danej przychodzacej');

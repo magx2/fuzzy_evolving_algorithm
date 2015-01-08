@@ -95,7 +95,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = e
         
         % stage 4
         % Up-date P_k(z*) (21)
-        z_tmp = sumsqr(z{k}-z{k-1})*4.5;
+        z_tmp = sumsqr(z{k}-z{k-1});
         for i=1:R,
             a = (k-1)*S_gwiazdka{k-1, i};
             b = k - 2 + S_gwiazdka{k-1, i} + (S_gwiazdka{k-1, i} * z_tmp);
