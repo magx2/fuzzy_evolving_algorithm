@@ -34,7 +34,7 @@ end
 function wykonaj( x, y, r, OMEGA, opis ) 
     disp([ 'Zaczynam [' opis{1} '] x '  num2str(length(r) * length(OMEGA)) ]);
    
-%     x=[x,x];y=[y,y];
+    times = 3;
     
     dane = opis{1};
     algorytm = 'simpl eTS';
@@ -63,9 +63,21 @@ function wykonaj( x, y, r, OMEGA, opis )
             [ y_przewidywane, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = simpl_ets( x, y, r_val, OMEGA_val, opis );
             czas = toc;
              
-            y = y(2:end);
-            y_przewidywane = y_przewidywane(2:end);
-            R_w_czasie = R_w_czasie(2:end);
+            fi = length(y)/times;
+            
+            y = y((times-1)*fi+1:end);
+            y_przewidywane = y_przewidywane((times-1)*fi+1:end);
+            R_w_czasie = R_w_czasie(1:fi);
+            
+            S = S(1:fi); 
+            S_min = S_min(1:fi); 
+            S_max = S_max(1:fi); 
+            S_podmiana = S_podmiana(1:fi); 
+            S_nowy  = S_nowy(1:fi); 
+            
+%             y = y(2:end);
+%             y_przewidywane = y_przewidywane(2:end);
+%             R_w_czasie = R_w_czasie(2:end);
             
             RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k , S, S_min, S_max, S_podmiana, S_nowy);
             
@@ -219,6 +231,9 @@ function [ x, y, r, OMEGA, opis ] = gas()
 %     y = mat2gray(csv(:, 2)');
     x = (csv(:, 1)');
     y = (csv(:, 2)');
+    
+    x = [  x x x];
+    y = [  y y y];
     
 %     x=x(1,1:50);
 %     y=y(1,1:50);
