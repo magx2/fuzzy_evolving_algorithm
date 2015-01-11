@@ -1,6 +1,6 @@
 function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = simpl_ets( x, y, r, OMEGA, opis )
 
-    debug=0;
+    debug=1;
 
     % x macierz [n x k] gdzie k liczba danych
     % y prawdziwe wyjscie jakie zaobserwowano [1 x k]
@@ -172,7 +172,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         if retu_24 && retu_25 
 % podmien klaster
             if debug
-                disp([ 'podmien klaster l=', num2str(l), '   k=', num2str(k) ' y-y^=' num2str(y_k-y_daszek{k}) ]);
+                disp([ 'podmien klaster l=', num2str(l), '   k=', num2str(k) 'R=', num2str(R),  ' y-y^=' num2str(y_k-y_daszek{k}) ]);
             end
            
            x_gwiazdka{l} = x_k;
@@ -265,7 +265,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         else
 % nic nie robienie z klastrem
             if debug
-              disp(['nie rob nic 24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k) ' y-y^=' num2str(y_k-y_daszek{k}) ]);
+              disp(['nie rob nic R=', num2str(R), '24=',int2str(retu_24), ' 25=',int2str(retu_25), ' k=', num2str(k) ' y-y^=' num2str(y_k-y_daszek{k}) ]);
             end
              
             % dodaje ilosc do klastra
@@ -299,10 +299,10 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
                                                                             R_w_czasie(k) = R;
 
 
-                                                                            s= [S_gwiazdka{k, :}];
-                                                                            S_min{k} = min(s);
-                                                                            S_max{k} = max(s);
-                                                                            S{k} = S_k;
+                                                                            %s= [S_gwiazdka{k, :}];
+                                                                            %S_min{k} = min(s);
+                                                                            %S_max{k} = max(s);
+                                                                            %S{k} = S_k;
     end
     
     opis{3} = R;

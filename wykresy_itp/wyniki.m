@@ -15,17 +15,14 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     % normlny
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp '-' num2str(nr)];
 
-        %plot1 = figure;
-        %plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b',[0:K-1], out(:,3), 'r');
         plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b');
         set(gcf, 'visible','off');
-        title(['Wykres wartosci przewidywanej, prawdziwej i RMSE (' dane ' - ' algorytm ')']);
+        title(['Wykres wartosci przewidywanej, prawdziwej (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('Wyniki');
-        %legend('y przewidywane','y', 'RMSE');
         legend('y przewidywane','y');
 
-        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE') char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
+        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE) char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
         set(MyBox,'Units','Normalized');
         set(MyBox,'Position',[0.02,0.9]);
 
@@ -35,17 +32,14 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
      % normlny i R w czasie
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp '-R-i-y' num2str(nr)];
 
-        %plot1 = figure;
-        %plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b',[0:K-1], out(:,3), 'r');
         plotyy([0:K-1], [out(:,1), out(:,2)],[0:K-1], R_w_czasie,'semilogy','plot' );
         set(gcf, 'visible','off');
         title(['y-greki i R (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('Wyniki');
-        %legend('y przewidywane','y', 'RMSE');
-        legend('y przewidywane','y');
+        legend('y','y przewidywane','R');
 
-        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE') char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
+        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE) char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
         set(MyBox,'Units','Normalized');
         set(MyBox,'Position',[0.02,0.9]);
 
@@ -56,17 +50,14 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     % R w czasie
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp 'R-w-czasie' '-' num2str(nr)];
 
-        %plot1 = figure;
-        %plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b',[0:K-1], out(:,3), 'r');
-        plot([1:K], R_w_czasie, 'g');
+        plot([0:K-1], R_w_czasie, 'g');
         set(gcf, 'visible','off');
         title(['Liczba klastórw w czasie (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('Liczba klastrów');
-        %legend('y przewidywane','y', 'RMSE');
         legend('R');
 
-        MyBox = text(0.5,0.5,['algorytm=', algorytm]);
+        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE) char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
         set(MyBox,'Units','Normalized');
         set(MyBox,'Position',[0.02,0.9]);
 
@@ -76,14 +67,11 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
 	% R w czasie - delta y
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp 'R-w-czasie-delta' '-' num2str(nr)];
 
-        %plot1 = figure;
-        %plot([0:K-1], out(:,1), 'g',[0:K-1], out(:,2), '--b',[0:K-1], out(:,3), 'r');
         plotyy([0:K-1], R_w_czasie,[0:K-1], out(:,3),'semilogy','plot');
         set(gcf, 'visible','off');
         title(['Liczba klastórw w czasie (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('Liczba klastrów');
-        %legend('y przewidywane','y', 'RMSE');
         legend('R');
 
         MyBox = text(0.5,0.5,['algorytm=', algorytm]);
@@ -96,16 +84,14 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     % roznica
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp '-roznica'  '-' num2str(nr)];
 
-        %plot1 = figure;
         plot([0:K-1], out(:,3), 'r');
         set(gcf, 'visible','off');
-        title(['Róznica miedzy przewidywanym wyj?ciem a prawdziwym wyj?ciem (' dane ' - ' algorytm ')']);
+        title(['Róznica miedzy przewidywanym wyjsciem a prawdziwym wyjsciem (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('Róznica');
-        %legend('y przewidywane','y', 'RMSE');
-        legend('y - y_p');
+        legend('y - y przewidywane');
 
-        MyBox = text(0.5,0.5,['algorytm=', algorytm]);
+        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE) char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
         set(MyBox,'Units','Normalized');
         set(MyBox,'Position',[0.02,0.9]);
 
@@ -115,7 +101,6 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
     % S min max
         filename = ['G:\mgr\wykresy\' dane '\' dane '-' algorytm '-' TimeStamp '-s-min-max'  '-' num2str(nr)];
 
-        %plot1 = figure;
         smi=cell2mat(S_min);
         sma= cell2mat(S_max);
         s=cell2mat(S);
@@ -126,10 +111,9 @@ function [ RMSE ] = wyniki( y_przewidywane, y_prawdziwe, R_w_czasie, opis, nr, S
         title([' (' dane ' - ' algorytm ')']);
         xlabel('nr danej przychodzacej');
         ylabel('S');
-        %legend('y przewidywane','y', 'RMSE');
         legend('S min','S max','S');
 
-        MyBox = text(0.5,0.5,['algorytm=', algorytm]);
+        MyBox = text(0.5,0.5,['algorytm=', algorytm, char(10), 'RMSE=', num2str(RMSE) char(10) 'R=' num2str(R) char(10) 'r=' num2str(r) char(10) '\Omega=' num2str(OMEGA)]);
         set(MyBox,'Units','Normalized');
         set(MyBox,'Position',[0.02,0.9]);
 
