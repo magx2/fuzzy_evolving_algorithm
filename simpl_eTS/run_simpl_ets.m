@@ -27,8 +27,8 @@ end
 function [ r, OMEGA ] = wejscie()
 %     r = [ 20000 50000 10000 5000 100000  ];
 %     OMEGA = [ 2000000 20 2000 10000 100000 ] * 1000;
-    r = [20000, 40000];
-    OMEGA = 2000000;
+    r = 1000000;
+    OMEGA = 20000;
 end
 
 function wykonaj( x, y, r, OMEGA, opis ) 
