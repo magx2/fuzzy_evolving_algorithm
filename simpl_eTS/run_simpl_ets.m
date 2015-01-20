@@ -1,9 +1,9 @@
 function run_simpl_ets
 format long
 
-%     [x, y, r, OMEGA, opis] = prosta_funkcja();
-%      %r=1000;
-%     wykonaj(x, y, r, OMEGA, opis);
+    [x, y, r, OMEGA, opis] = prosta_funkcja();
+%      r=1000;
+    wykonaj(x, y, r, OMEGA, opis);
 %     
 %     [x, y, r, OMEGA, opis] = gas();
 %     wykonaj(x, y, r, OMEGA, opis);
@@ -11,8 +11,8 @@ format long
 %     [x, y, r, OMEGA, opis] = nieruchomosci2();
 %     wykonaj(x, y, r, OMEGA, opis);
 %     
-    [x, y, r, OMEGA, opis] = nieruchomosci();
-    wykonaj(x, y, r, OMEGA, opis);
+%     [x, y, r, OMEGA, opis] = nieruchomosci();
+%     wykonaj(x, y, r, OMEGA, opis);
 % %     
 %     [x, y, r, OMEGA, opis] = sml();
 %     wykonaj(x, y, r, OMEGA, opis);
@@ -25,10 +25,19 @@ format long
 end
 
 function [ r, OMEGA ] = wejscie()
-%     r = [ 20000 50000 10000 5000 100000  ];
-%     OMEGA = [ 2000000 20 2000 10000 100000 ] * 1000;
-    r = 1000000;
-    OMEGA = 20000;
+%     r = linspace(0.1,50,90) * 100000;
+%     OMEGA =  linspace(0.1,50,90) * 1000;
+%     
+%      r = linspace(1,10000,10);
+%     OMEGA =  linspace(100,10000,10);
+     r = 1000;
+    OMEGA =  10000;
+%     x = r(23)
+%     y = OMEGA(1)
+%     r = 10 * 100000;
+%     OMEGA = 20 * 1000;
+%     r =  1.243483146067416e+06;
+%     OMEGA = 100;
 end
 
 function wykonaj( x, y, r, OMEGA, opis ) 
@@ -37,18 +46,25 @@ function wykonaj( x, y, r, OMEGA, opis )
     times = 3;
     
     dane = opis{1};
-    algorytm = 'simpl eTS';
+    katalog = opis{100};
+    algorytm = 'simple eTS';
     
     tismp = TimeStamp;
     
-    csvFileName = ['G:\mgr\csv\' dane '\' dane '-' algorytm '-' tismp '.csv'];
+    
+    wynikiFolder = [ tismp  '\'];
+%     mkdir(['G:\mgr\wyniki\' dane ]);
+    mkdir(['G:\mgr\wyniki\' katalog '\' ]);
+    mkdir(['G:\mgr\wykresy\' katalog '\' ]);
+    mkdir(['G:\mgr\csv\' katalog '\' ]);
+    mkdir(['G:\mgr\wyniki\' katalog '\' wynikiFolder]);
+    
+    csvFileName = ['G:\mgr\csv\' katalog '\' dane '-' algorytm '-' tismp '.csv'];
     
     fid = fopen(csvFileName, 'w');
     fprintf(fid, 'nr,r,OMEGA,RMSE,R,czas\n');
     fclose(fid);
     
-    wynikiFolder = [ tismp  '\'];
-    mkdir(['G:\mgr\wyniki\' dane '\' wynikiFolder]);
     
     RMSE_all = zeros(length(r)*length(OMEGA),1);
     
@@ -56,7 +72,7 @@ function wykonaj( x, y, r, OMEGA, opis )
     for r_val=r,
         for OMEGA_val=OMEGA,
             
-            wynikiFileName = ['G:\mgr\wyniki\' dane '\' wynikiFolder dane '-' algorytm '-' tismp '-' num2str(k) '.csv'];
+            wynikiFileName = ['G:\mgr\wyniki\' katalog '\' wynikiFolder dane '-' algorytm '-' tismp '-' num2str(k) '.csv'];
             fid = fopen(wynikiFileName, 'w');
             fprintf(fid, 'y,y^,y-y^,R\n');
             fclose(fid);
@@ -81,13 +97,14 @@ function wykonaj( x, y, r, OMEGA, opis )
 %             y_przewidywane = y_przewidywane(2:end);
 %             R_w_czasie = R_w_czasie(2:end);
             
-            RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k , S, S_min, S_max, S_podmiana, S_nowy);
+            RMSE = wyniki(cell2mat(y_przewidywane), y', R_w_czasie, opis, k , S, S_min, S_max, S_podmiana, S_nowy, tismp);
             RMSE_all(k) = RMSE;
             
             
             R = opis{3};
             wiersz = [ k r_val OMEGA_val RMSE R czas ];
             
+            %disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' czas=' num2str(czas/60) ' (OMEGA|r)=(' num2str(OMEGA_val/1000) '|' num2str(r_val/100000)  ') RMSE='  num2str(RMSE) ]);
             disp([ 'Koniec k=' num2str(k) ' R=' num2str(R) ' czas=' num2str(czas/60) ' (OMEGA|r)=(' num2str(OMEGA_val) '|' num2str(r_val)  ') RMSE='  num2str(RMSE) ]);
             
             k=k+1;
@@ -103,7 +120,15 @@ function wykonaj( x, y, r, OMEGA, opis )
     end
     
     Wyniki = RMSE_all
-    najmniejsza = min(RMSE_all)
+    [najmniejsza, idx] = min(RMSE_all)
+    
+    a = floor((idx-1)/3) + 1;
+    b = rem((idx-1), 3) + 1;
+    
+    r_male = r(a);
+    OMEGA_male = OMEGA(b);
+    
+    disp(['(' num2str(a) ', ' num2str(b) ')' '(' num2str(r_male) ', ' num2str(OMEGA_male) ')']) 
 end
 
 function [ x, y, r, OMEGA, opis ] = nieruchomosci() 
@@ -121,6 +146,7 @@ function [ x, y, r, OMEGA, opis ] = nieruchomosci()
     
     opis = cell(1,1);
     opis{1} = 'Nieruchomosci';
+    opis{100} = 'Nieruchomosci';
 end
 
 
@@ -149,14 +175,11 @@ function [ x, y, r, OMEGA, opis ] = prosta_funkcja()
         y(k) =  x_k(1) * 2 + x_k(2) * 3 + 4;
     end
     
-    
-    x = [  x x x];
-    y = [  y y y];
-    
     [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
-    opis{1} = 'y=2x+3x+4';
+    opis{1} = 'y = 2x_1 + 3x_2 + 4';
+    opis{100} = 'y';
 end
 
 function [ x, y, r, OMEGA, opis ] = sinus() 
@@ -176,7 +199,7 @@ function [ x, y, r, OMEGA, opis ] = sinus()
     [r, OMEGA] = wejscie();
     
     opis = cell(1,1);
-    opis{1} = 'y=2x+3x+4';
+    opis{1} = 'y=2x_1+3x_2+4';
 end
 
 function [ x, y, r, OMEGA, opis ] = nieruchomosci_stare() 

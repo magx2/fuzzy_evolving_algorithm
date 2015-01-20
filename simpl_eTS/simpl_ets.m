@@ -1,6 +1,6 @@
 function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = simpl_ets( x, y, r, OMEGA, opis )
 
-    debug=1;
+    debug=0;
 
     % x macierz [n x k] gdzie k liczba danych
     % y prawdziwe wyjscie jakie zaobserwowano [1 x k]
@@ -57,7 +57,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
     THETA = cell(K, R);
     THETA{1, R} = PI{1};
     psi = cell(K, R);
-    psi{1, R} = zeros((n+1), 1);
+    psi{k+1, R} = [x(:, k)', y(:, k)']';
         
     y_daszek = cell(K, 1);
     y_daszek{1} = zeros(1, m);
@@ -70,38 +70,38 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
     R_w_czasie(1) = R;
  
     
-                    x_k =x(:, 2);
-                    x_k_e = [1 x_k']';
-                     mi1 = mi(x_k, x_gwiazdka, r, R);
-                        lambda1=cell(R,1);
-                        lam_0=0;
-                        lam_z_0=zeros(1,R);
-                        for i=1:R,
-                            lambda1{i} = lambda( mi1, i );
-
-                            if ilosc_w_klastrze{i} / 2 < 0.01
-                                lam_0=lam_0+lambda1{i};
-                                lambda1{i}=0;
-                                lam_z_0(i)=i;
-                            end
-
-                            psi{2, i} = lambda1{i} * x_k_e;
-                        end
-                        lam_0=lam_0/(R-nnz(lam_z_0));
-                        if lam_0 > 0
-                            % dodawanie z zer
-                            for i=1:R,
-                                if ~ismember([i],lam_z_0)
-                                    lambda1{i}=+lambda1{i}+1;
-                                end
-                            end
-                        end
-    
+%                     x_k =x(:, 2);
+%                     x_k_e = [1 x_k']';
+%                      mi1 = mi(x_k, x_gwiazdka, r, R);
+%                         lambda1=cell(R,1);
+%                         lam_0=0;
+%                         lam_z_0=zeros(1,R);
+%                         for i=1:R,
+%                             lambda1{i} = lambda( mi1, i );
+% 
+%                             if ilosc_w_klastrze{i} / 2 < 0.01
+%                                 lam_0=lam_0+lambda1{i};
+%                                 lambda1{i}=0;
+%                                 lam_z_0(i)=i;
+%                             end
+% 
+%                             psi{2, i} = lambda1{i} * x_k_e;
+%                         end
+%                         lam_0=lam_0/(R-nnz(lam_z_0));
+%                         if lam_0 > 0
+%                             % dodawanie z zer
+%                             for i=1:R,
+%                                 if ~ismember([i],lam_z_0)
+%                                     lambda1{i}=+lambda1{i}+1;
+%                                 end
+%                             end
+%                         end
+    k=1;
     while k <= K - 1
         
-        for i=1:R,
-           psi{k+1, i} =  psi{k, i}; 
-        end
+%         for i=1:R,
+%            psi{k+1, i} =  psi{k, i}; 
+%         end
         % stage 2
         x_k = x(:, k + 1); % k-ta kolumna; k-ta dana
         
@@ -172,7 +172,7 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
         if retu_24 && retu_25 
 % podmien klaster
             if debug
-                disp([ 'podmien klaster l=', num2str(l), '   k=', num2str(k) 'R=', num2str(R),  ' y-y^=' num2str(y_k-y_daszek{k}) ]);
+                disp([ 'podmien klaster l=', num2str(l), '   k=', num2str(k) ' R=', num2str(R),  ' y-y^=' num2str(y_k-y_daszek{k}) ]);
             end
            
            x_gwiazdka{l} = x_k;
@@ -226,15 +226,15 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 %                                 end
 %                             end
 %                         end
-            
-                        mi1 = mi(x_k, x_gwiazdka, r, R);
-                        lambda1=cell(R,1);
-                        for i=1:R,
-                            lambda1{i} = lambda( mi1, i );
-
-
-                            psi{k, i} = lambda1{i} * x_k_e;
-                        end
+%             
+%                         mi1 = mi(x_k, x_gwiazdka, r, R);
+%                         lambda1=cell(R,1);
+%                         for i=1:R,
+%                             lambda1{i} = lambda( mi1, i );
+% 
+% 
+%                             psi{k, i} = lambda1{i} * x_k_e;
+%                         end
                        
             
             
@@ -291,9 +291,19 @@ function [ y_daszek, R_w_czasie, opis, S, S_min, S_max, S_podmiana, S_nowy ] = s
 % END nic nie robienie z klastrem
         end
 
+        
+                        mi1 = mi(x_k, x_gwiazdka, r, R);
+                        lambda1=cell(R,1);
+                        for i=1:R,
+                            lambda1{i} = lambda( mi1, i );
+
+
+                            psi{k+1, i} = lambda1{i} * x_k_e;
+                        end
+        
        for i=1:(R),
             C{k, i} = C{k - 1, i} - ( C{k - 1, i} * psi{k,i} * psi{k,i}' * C{k - 1, i} ) / ( 1 + psi{k,i}' * C{k - 1, i} * psi{k,i});
-            THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k - y_daszek{k} );
+            THETA{k, i} = THETA{k - 1, i} + C{k} * psi{k, i} * ( y_k -  psi{k , i}' * THETA{k-1, i});
        end
         
                                                                             R_w_czasie(k) = R;
